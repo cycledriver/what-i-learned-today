@@ -36,7 +36,8 @@ def test_foo(monkepatch: pytest.MonkeyPatch) -> None:
     assert mock_thing.called
 ```
 
-The other day I thought to myself, maybe I can use the walrus here...
+The other day I thought to myself, maybe I can use the walrus in the mokeypatch command: `python
+    monkeypatch.setattr(foo.bar, "baz", mock_thing := Mock())`
 
 ```python
 from unittest.mock import Mock()
@@ -49,23 +50,28 @@ def test_foo(monkepatch: pytest.MonkeyPatch) -> None:
     assert mock_thing.called
 ```
 
-Voila!  It works...  So, I learned that you can use the walrus operator in all types of places I hadn't considered.  
+Voilà!  It works...  So, I learned that you can use the walrus operator in all types of places I hadn't considered.  
 I've been using it in `if` and `while` statements to initialize and check but not in other types of expressions.
 
 That's what I learned today...
 
 ## Something else I learned...
 
-In researching for this post, I also learned something new.
+In researching for this post, I also (re?)learned something new.
 
 I've also use the `pytest-mock` plugin on many projects but forgot how it helps simplify monkeypatching:
 
 ```python
 # uv add --group dev pytest-mock
-import foo.bar
+import os
 
-def test_foo(mocker) -> None:
-    mocker.patch("foo.bar.baz")
-    run_something()
-    foo.bar.baz.assert_called
+class FileSystem:
+    @staticmethod
+    def remove_file(filename):
+        os.remove(filename)
+
+def test_file_removal(mocker):
+    mocker.patch("os.remove")  # Mock the os.remove function
+    FileSystem.remove_file("test_file.txt")
+    os.remove.assert_called_once_with("test_file.txt")
 ```
